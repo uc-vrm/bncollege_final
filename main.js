@@ -6,10 +6,14 @@ const require = createRequire(import.meta.url);
 // json to csv modules
 const csvToJsonData = require("csvtojson");
 const jsonToCsvData = require("json2csv").parse;
-
+ 
 const cheerio = require('cheerio');
-
-const storeNames = ["ivytech"];
+ 
+const storeNames = ["howard",
+// "husky",
+// "hwc",
+// "hws"
+];
 // let storeName = "gatech";
 //get storeId from link of arrays.
 let j = 0;
@@ -52,7 +56,7 @@ async function getStore(storeName) {
             isTextBook = 1;
             let booksLen = $(".sitemap-product-ul").eq(l).find("a").length;
             for(let b=0; b<booksLen; b++){
-                if(n>65){
+                if(n>268){
                     let bookName = $(".sitemap-product-ul").eq(l).find("a").eq(b).text().trim();
                     let bookLink = $(".sitemap-product-ul").eq(l).find("a").eq(b).attr("href");
                     totalData.push({storeName,bookName,bookLink});
@@ -67,10 +71,11 @@ async function getStore(storeName) {
                     });
                 }
                 n++;
+                bookDnum = Math.floor(Math.random()*1000000);
             }
-            rawdata = fs.readFileSync('stackData.json');
-            allBooksData = await JSON.parse(rawdata);
-            // let allbooksDetail = JSON.stringify(allBooksData);
+            // rawdata = fs.readFileSync('stackData.json');
+            // allBooksData = JSON.parse(rawdata);
+            let allbooksDetail = JSON.stringify(allBooksData);
             // console.log(totalData);
             let saveData = JSON.stringify(totalData);
             j++;
@@ -79,7 +84,7 @@ async function getStore(storeName) {
                 console.log('Data Saved');
             });
             saveData = '';
-            fs.writeFile('./bncollege_jsons/booksDetails/'+storeName+'_'+bookDnum+'.json',rawdata, function (err) {
+            fs.writeFile('./bncollege_jsons/booksDetails/'+storeName+'_'+bookDnum+'.json',allbooksDetail, function (err) {
                 if (err) throw err;
                 console.log('Data Saved');
             });
@@ -98,14 +103,15 @@ async function getStore(storeName) {
             let stackData = JSON.stringify(allBooksData);
             fs.writeFile('./stackData.json',stackData, function (err) {
                 if (err) throw err;
-                console.log("book number:",n," is saved to stack memory");
+                console.log("stack memory cleared");
             });
+            // bookDnum ++;
         }else if(isTextBook = 0){
             console.log("you don't any textbook");
             totalData.push({storeName});
             let saveData = JSON.stringify(totalData);
             j++;
-            fs.writeFile('./bncollege_jsons/oneByOneLinks/'+storeName+'_'+j+'.json',saveData, function (err) {
+            fs.writeFile('./bncollege_jsons/oneByOneLinks/'+storeName+'_'+bookDnum+'.json',saveData, function (err) {
                 if (err) throw err;
                 console.log('Data Saved');
             });
@@ -117,13 +123,13 @@ async function getStore(storeName) {
             fs.writeFileSync("./bncollege.csv",csv);
             console.log("saved json data in csv");
             source = [];
+            // bookDnum ++;
         }
-        bookDnum ++;
     }
     // return totalData;
 }
-
-
+ 
+ 
 async function getBooks(storeName,bookLink){
     const str =  await fetch(`${bookLink}`, {
         method: 'GET',
@@ -212,7 +218,7 @@ async function getBooks(storeName,bookLink){
     console.log(data);
     return data;
 }
-
+ 
 async function getDepartment(storeId,termId,newBookId){
     const str =  await fetch(`https://gatech.bncollege.com/shop/gatech/textbook/TermDepCourseJsonControllerCmd?termId=${termId}&type=DEP&displayStoreId=${storeId}&newBookId=${newBookId}`, {
         method: 'GET',
@@ -222,7 +228,7 @@ async function getDepartment(storeId,termId,newBookId){
     const ret = await str.json();     
     return ret;
 }
-
+ 
 async function getCourses(storeId,depId,newBookId){
     const str =  await fetch(`https://gatech.bncollege.com/shop/gatech/textbook/TermDepCourseJsonControllerCmd?depId=${depId}&type=COURSE&displayStoreId=${storeId}&newBookId=${newBookId}`, {
         method: 'GET',
@@ -232,7 +238,7 @@ async function getCourses(storeId,depId,newBookId){
     const ret = await str.json();     
     return ret;
 }
-
+ 
 async function getSections(storeId,courseId,newBookId){
     const str =  await fetch(`https://gatech.bncollege.com/shop/gatech/textbook/TermDepCourseJsonControllerCmd?courseId=${courseId}&type=SECTION&displayStoreId=${storeId}&newBookId=${newBookId}`, {
         method: 'GET',
@@ -242,7 +248,7 @@ async function getSections(storeId,courseId,newBookId){
     const ret = await str.json();     
     return ret;
 }
-
+ 
 function wait(ms){
     return;
     ms = ms || false;
@@ -257,11 +263,11 @@ function wait(ms){
         end = new Date().getTime();
     }
 }
-
+ 
 function generateTimeStamp(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
-
+ 
 function getHeaderString() {
     return  {
         'Accept': 'application/json, text/plain, */*',
@@ -269,7 +275,7 @@ function getHeaderString() {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'
     }
 }
-
+ 
 function getHeaderString2() {
     return  {
         'Accept': 'application/json, text/plain, */*',
