@@ -54,7 +54,7 @@ async function getStore(storeName) {
                     let stackData = JSON.stringify(allBooksData);
                     fs.writeFile('./stackData.json',stackData, function (err) {
                         if (err) throw err;
-                        console.log("book number:",n," is saved to stack memory");
+                        console.log("stack memory cleared");
                     });
                 // }
                 n++;
