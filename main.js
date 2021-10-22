@@ -10,7 +10,8 @@ const jsonToCsvData = require("json2csv").parse;
 const cheerio = require('cheerio');
 
 const storeNames = [
-//write your store names here
+    // "umo",
+    "msmu"
 ];
 //get storeId from link of arrays.
 let j = 0;
@@ -43,7 +44,7 @@ async function getStore(storeName) {
             isTextBook = 1;
             let booksLen = $(".sitemap-product-ul").eq(l).find("a").length;
             for(let b=0; b<booksLen; b++){
-                // if(n>65){
+                // if(n>182){
                     let bookName = $(".sitemap-product-ul").eq(l).find("a").eq(b).text().trim();
                     let bookLink = $(".sitemap-product-ul").eq(l).find("a").eq(b).attr("href");
                     totalData.push({storeName,bookName,bookLink});
@@ -54,7 +55,7 @@ async function getStore(storeName) {
                     let stackData = JSON.stringify(allBooksData);
                     fs.writeFile('./stackData.json',stackData, function (err) {
                         if (err) throw err;
-                        console.log("stack memory cleared");
+                        console.log("book number:",n," is saved to stack memory");
                     });
                 // }
                 n++;
@@ -86,7 +87,7 @@ async function getStore(storeName) {
             let stackData = JSON.stringify(allBooksData);
             fs.writeFile('./stackData.json',stackData, function (err) {
                 if (err) throw err;
-                console.log("book number:",n," is saved to stack memory");
+                console.log("stack memory cleared");
             });
         }else if(isTextBook == 0){
             console.log("you don't any textbook");
@@ -112,6 +113,7 @@ async function getStore(storeName) {
 
 
 async function getBooks(storeName,bookLink){
+    console.log(bookLink);
     const str =  await fetch(`${bookLink}`, {
         method: 'GET',
         mode: 'cors',
@@ -152,21 +154,21 @@ async function getBooks(storeName,bookLink){
             campusId = $("#selectedCampusId").attr("value")||'';
             console.log("bookId: ",newBookId," termName: ",termName," termId: ",termId,"storeId: ",storeId," campus name: ",campusName," campusId: ",campusId);
             if(termId){
-                let department = await getDepartment(storeId,termId,newBookId)||'';
+                let department = await getDepartment(storeName,storeId,termId,newBookId)||'';
                 let depLen = department.length;
                 if(depLen>0){
                     for(let i=0; i<depLen; i++){
                         depId = department[i].catgroupId;
                         depName = department[i].courseSection;
                         console.log("departmentId "+(i+1)+": ",depId," department name: ",depName);
-                        let courses = await getCourses(storeId,depId,newBookId)||'';
+                        let courses = await getCourses(storeName,storeId,depId,newBookId)||'';
                         let courseLen = courses.length;
                         if(courseLen>0){
                             for(let j=0; j<courseLen; j++){
                                 courseName = courses[j].courseSection;
                                 courseId = courses[j].catgroupId;
                                 console.log("course name: ",courseName," courseId: ",courseId);
-                                let sections = await getSections(storeId,courseId,newBookId);
+                                let sections = await getSections(storeName,storeId,courseId,newBookId);
                                 let sectionLen = sections.length;
                                 if(sectionLen>0){
                                     for(let k=0; k<sectionLen; k++){
@@ -200,8 +202,8 @@ async function getBooks(storeName,bookLink){
     return data;
 }
 
-async function getDepartment(storeId,termId,newBookId){
-    const str =  await fetch(`https://gatech.bncollege.com/shop/gatech/textbook/TermDepCourseJsonControllerCmd?termId=${termId}&type=DEP&displayStoreId=${storeId}&newBookId=${newBookId}`, {
+async function getDepartment(storeName,storeId,termId,newBookId){
+    const str =  await fetch(`https://${storeName}.bncollege.com/shop/${storeName}/textbook/TermDepCourseJsonControllerCmd?termId=${termId}&type=DEP&displayStoreId=${storeId}&newBookId=${newBookId}`, {
         method: 'GET',
         mode: 'cors',
         headers: getHeaderString2(),
@@ -210,8 +212,8 @@ async function getDepartment(storeId,termId,newBookId){
     return ret;
 }
 
-async function getCourses(storeId,depId,newBookId){
-    const str =  await fetch(`https://gatech.bncollege.com/shop/gatech/textbook/TermDepCourseJsonControllerCmd?depId=${depId}&type=COURSE&displayStoreId=${storeId}&newBookId=${newBookId}`, {
+async function getCourses(storeName,storeId,depId,newBookId){
+    const str =  await fetch(`https://${storeName}.bncollege.com/shop/${storeName}/textbook/TermDepCourseJsonControllerCmd?depId=${depId}&type=COURSE&displayStoreId=${storeId}&newBookId=${newBookId}`, {
         method: 'GET',
         mode: 'cors',
         headers: getHeaderString2(),
@@ -220,8 +222,8 @@ async function getCourses(storeId,depId,newBookId){
     return ret;
 }
 
-async function getSections(storeId,courseId,newBookId){
-    const str =  await fetch(`https://gatech.bncollege.com/shop/gatech/textbook/TermDepCourseJsonControllerCmd?courseId=${courseId}&type=SECTION&displayStoreId=${storeId}&newBookId=${newBookId}`, {
+async function getSections(storeName,storeId,courseId,newBookId){
+    const str =  await fetch(`https://${storeName}.bncollege.com/shop/${storeName}/textbook/TermDepCourseJsonControllerCmd?courseId=${courseId}&type=SECTION&displayStoreId=${storeId}&newBookId=${newBookId}`, {
         method: 'GET',
         mode: 'cors',
         headers: getHeaderString2(),
